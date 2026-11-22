@@ -173,13 +173,6 @@ canvas#board.shk2, canvas#board.shk3, canvas#board.shk4 { animation-delay: var(-
 canvas#board.shkz { animation: shkz .24s ease-out var(--cd, 0ms); }
 @keyframes shkz { 0% { transform: scale(1.03); } 30% { transform: translateX(-3px) scale(1.02); } 60% { transform: translateX(2px) scale(1.008); } 100% { transform: none; } }
 #cine { position: absolute; inset: 4px; pointer-events: none; z-index: 2; border-radius: 8px; overflow: hidden; }
-#cine.b4, #cine.b6 { overflow: visible; }
-#cine::before, #cine::after { content: ""; position: absolute; left: -4px; right: -4px; height: 14px; background: rgba(26,16,56,.82); transform: scaleY(0); } /* 레터박스는 판 밖(테두리+위아래 여백)에만: 맨 윗줄 새 조각·맨 아랫줄을 가리지 않음 */
-#cine::before { bottom: 100%; transform-origin: top; border-radius: 8px 8px 0 0; }
-#cine::after { top: 100%; transform-origin: bottom; border-radius: 0 0 8px 8px; }
-#cine.b4::before, #cine.b4::after { animation: cbar .76s ease-out var(--cd, 0ms) backwards; }
-#cine.b6::before, #cine.b6::after { animation: cbar .56s ease-out var(--cd, 0ms) backwards; }
-@keyframes cbar { 0% { transform: scaleY(0); } 13% { transform: scaleY(1); } 75% { transform: scaleY(1); } 100% { transform: scaleY(0); } }
 #cineCue { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%); pointer-events: none; z-index: 3; font: 400 44px/1 var(--font-display); color: #fff; text-shadow: 0 3px 0 var(--accent); -webkit-text-stroke: 1px #2a1a4d; white-space: nowrap; }
 .boardwrap.wide #cineCue { top: 50%; font-size: 40px; }
 #cineCue b, #cineCue i { position: absolute; left: 50%; top: 50%; opacity: 0; font-style: normal; font-weight: 400; transform: translate(-50%, -50%); }
@@ -193,7 +186,7 @@ canvas#board.shkz { animation: shkz .24s ease-out var(--cd, 0ms); }
 #result.cineIn { animation: resIn .5s cubic-bezier(.2,1.4,.4,1) .08s both; }
 @keyframes resIn { from { opacity: 0; transform: translateY(18px) scale(.94); } to { opacity: 1; transform: none; } }
 /* reduced: B의 @media 줄은 위에 있어 뒤 규칙·더 구체적인 셀렉터를 못 이긴다 → T 셀렉터는 여기서 같은 구체성으로 끔 */
-@media (prefers-reduced-motion: reduce) { canvas#board.shkz, #cine.b4::before, #cine.b4::after, #cine.b6::before, #cine.b6::after, #cineCue.on b, #cineCue.on i, #cineVeil.on, #result.cineIn { animation: none; } }
+@media (prefers-reduced-motion: reduce) { canvas#board.shkz, #cineCue.on b, #cineCue.on i, #cineVeil.on, #result.cineIn { animation: none; } }
 .count.frozen .val, .count.frozen .label { color: #1d6fd6; }
 .irow { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; text-align: left; padding: 8px 0; border-bottom: 2px dashed var(--sh); }
 .irow:last-child { border-bottom: 0; }
@@ -962,7 +955,7 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
     activeBuff = null; activeFrom = ""; if (save.buff && !(typeof save.buff.kind === "string" && BUFFS.hasOwnProperty(save.buff.kind))) { save.buff = null; persist(); } // 잘못된 버프 종류는 버림(예전엔 BUFFS[kind].t에서 죽음)
     if (save.buff && save.buff.left > 0) { activeBuff = save.buff.kind; activeFrom = String(save.buff.from || "").replace(/[^\w가-힣 ]/g, "").slice(0, 8); save.buff.left--; if (save.buff.left <= 0) save.buff = null; if (activeBuff === "item") { var ia = ["row", "freeze"], ik = ia[Math.floor(Math.random() * 2)]; save.items[ik] = Math.min(ITEM_MAX, save.items[ik] + 1); } persist(); }
     parts.length = 0; flashes.length = 0; cv.classList.remove("shk2", "shk3", "shk4", "shkz", "shkd"); $("cine").classList.remove("b4", "b6"); $("banner").classList.remove("on"); $("cineVeil").classList.remove("on"); $("result").classList.remove("cineIn");
-    cine.lag = 0; cine.warp = null; cine.hold = null; cine.dimT = 0; cine.rays = null; cine.bgOff = false; cine.auto = 0; cine.ft.n = 0; cine.ft.sum = 0; cine.ft.bad = 0; cine.beats.length = 0; cine.pulse = 0; cine.bg.stars.length = 0; cine.bg.off = 0; cine.bg.lt = 0; cine.dimA = 0.30; cineSetQ(save.fxq); fxqText(); cine.bg.tier = -1; cine.bg.old = null; cine.bg.xf = 0; cineBgMake(cineTier(1)); cine.fill = 0;
+    cine.lag = 0; cine.warp = null; cine.hold = null; cine.dimT = 0; cine.rays = null; cine.wash = null; cine.vig = null; cine.bgOff = false; cine.auto = 0; cine.ft.n = 0; cine.ft.sum = 0; cine.ft.bad = 0; cine.beats.length = 0; cine.pulse = 0; cine.bg.stars.length = 0; cine.bg.off = 0; cine.bg.lt = 0; cine.dimA = 0.30; cineSetQ(save.fxq); fxqText(); cineSprMake(); cine.bg.tier = -1; cine.bg.old = null; cine.bg.xf = 0; cineBgMake(cineTier(1)); cine.fill = 0;
     flipped = false; flipLeft = FLIP_MS; combo = 0; freezeLeft = 0; dropAcc = 0; running = true; paused = false; over = false; flipping = false; inq = [];
     $("flipper").classList.remove("out"); catFor("normal"); updateItems();
     nextType = draw7(); spawn();
@@ -1031,7 +1024,10 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
       if (cleared >= 4) { burstGold(Math.round((curWide ? 10 : 20) * cineMul()), cut, fxNow); banner("TETRIS!"); }
       shake(plan.zoom ? "shkz" : cleared >= 4 ? "shk4" : cleared === 3 ? "shk3" : cleared === 2 ? "shk2" : "");
       cineBars(plan.bars === 760 ? "b4" : plan.bars === 560 ? "b6" : "");
-      if (plan.rays > 0) { var ry = 0; cut.forEach(function (c) { ry += (c[1] + 0.5) * CELL; }); cine.rays = { t: fxNow, n: plan.rays, y: ry / cut.length, c: n4 ? "255,243,196" : combo + 1 >= 8 ? "255,214,236" : "143,245,207" }; }
+      var ry = 0; cut.forEach(function (c) { ry += (c[1] + 0.5) * CELL; }); ry /= cut.length;
+      if (plan.rays > 0) cine.rays = { t: fxNow, n: plan.rays, y: ry, c: n4 ? "255,243,196" : combo + 1 >= 8 ? "255,214,236" : "143,245,207" };
+      if (plan.bars > 0) cine.wash = { t: fxNow, y: ry, k: n4 ? 0 : combo + 1 >= 8 ? 2 : 1 }; // 2차 3.2: 큰 연출 허락 때만(낮음 등급도, 빛줄기 0개여도). 키는 빛줄기 색 규칙과 같음
+      if (plan.bars > 0) cine.vig = { tr: now + hd, d: n4 ? 760 : 560, m: n4 ? 1 : 0.8 }; // 2차 4.3: cineBars와 같은 때(히트스톱 끝), 실제 시계
       if (cleared >= 2 && hd > 0) sfx("tense", hd / 1000);
     }
     if (cleared) { combo++; score += Math.round(([0, 100, 300, 500, 800][cleared] * level + (combo > 1 ? (combo - 1) * 50 * level : 0)) * (100 + runDeco) / 100); lines += cleared; level = 1 + Math.floor(lines / 10); buzz(cleared >= 4 ? [30, 30, 50] : 30); sfx("clear", cleared, hd / 1000); if (fxOn && (cleared >= 2 || combo >= 2)) sfx("chord", combo, hd / 1000); comboFx(cleared, hd / 1000); collectGems(got); if (level > lv0) { sfx("level", 0, hd / 1000); if (fxOn) { var lv = $("level"); lv.classList.remove("lvup"); void lv.offsetWidth; lv.classList.add("lvup"); } } } else { combo = 0; buzz(10); sfx(dropHard ? "drop" : "lock"); }
@@ -1239,7 +1235,7 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
     q: "mid", noAuto: false, auto: 0,          // 실행 중 등급(low/mid/high, save.fxq에서 시작·자동 낮춤으로만 내려감), 시험본 자동 낮춤 끔, 이번 판 자동 낮춤 횟수
     lag: 0, warp: null,                        // 효과 시계(슬로모)
     hold: null, dimT: 0, dimA: 0.30, lastPop: 0,           // 긴장 정보, 어둠 걷힘 시작(실제 시계), 마지막 큰 연출(광과민 350ms 제한)
-    rays: null,
+    rays: null, spr: null, wash: null, wspr: null, vig: null, vcv: null, // 2차: 입자 아틀라스·색 번짐 스프라이트(최초 start 때 1번), 색 번짐·비네팅 상태
     beats: [], beatN: 0, pulse: 0,
     bg: { tier: -1, cv: null, old: null, spare: null, xf: 0, stars: [], off: 0, lt: 0 },
     bgOff: false, fill: 0, startT: 0, last: null,
@@ -1286,7 +1282,8 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
     return (cine.last = p);
   }
   function cellColor(v) { return COLORS[v] || (typeof v === "string" && v.charAt(0) === "#" ? v : "#ffffff"); }
-  function addPart(p) { parts.push(p); if (parts.length > PART_MAX) parts.splice(0, parts.length - PART_MAX); }
+  function cineSz(p) { var r = Math.random(); if (r < 0.70) { p.k = 0; p.s = 3.5 + Math.random() * 3; } else if (r < 0.92) { p.k = 0; p.s = 6.5 + Math.random() * 3.5; } else { p.k = 1; p.s = 6 + Math.random() * 3; } return p; } // 2차 1.2: 작은 글로우 70% · 큰 글로우 22% · 별 8%
+  function addPart(p, sz) { if (sz) cineSz(p); parts.push(p); if (parts.length > PART_MAX) parts.splice(0, parts.length - PART_MAX); }
   function burstRow(row, oy, n, now) {
     if (!fxOn || !row) return;
     var filled = []; for (var x = 0; x < row.length; x++) if (row[x]) filled.push(x);
@@ -1294,27 +1291,65 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
     var mid = COLS * CELL / 2;
     for (var i = 0; i < n; i++) {
       var cx = filled[Math.floor(Math.random() * filled.length)], px = (cx + Math.random()) * CELL, side = px < mid ? -1 : 1;
-      addPart({ x: px, y: (oy + 0.2 + Math.random() * 0.6) * CELL, vx: side * (30 + Math.random() * 170), vy: -(160 + Math.random() * 280), g: 900, t0: now + Math.abs(cx + 0.5 - COLS / 2) * 12, life: 520 + Math.random() * 380, c: cellColor(row[cx]), s: 5 + Math.random() * 6 });
+      addPart({ x: px, y: (oy + 0.2 + Math.random() * 0.6) * CELL, vx: side * (30 + Math.random() * 170), vy: -(160 + Math.random() * 280), g: 900, t0: now + Math.abs(cx + 0.5 - COLS / 2) * 12, life: 520 + Math.random() * 380, c: cellColor(row[cx]), s: 0, k: 0 }, true);
     }
   }
   function burstGold(n, cut, now) {
     if (!fxOn) return;
-    for (var i = 0; i < n; i++) { var oy = cut[i % cut.length][1]; addPart({ x: Math.random() * COLS * CELL, y: (oy + Math.random()) * CELL, vx: (Math.random() - 0.5) * 140, vy: -(80 + Math.random() * 200), g: 220, t0: now + 60 + Math.random() * 180, life: 650 + Math.random() * 300, c: i % 3 ? "#ffd84a" : "#ffffff", s: 3 + Math.random() * 3, tw: 1 }); }
+    for (var i = 0; i < n; i++) { var oy = cut[i % cut.length][1]; addPart({ x: Math.random() * COLS * CELL, y: (oy + Math.random()) * CELL, vx: (Math.random() - 0.5) * 140, vy: -(80 + Math.random() * 200), g: 220, t0: now + 60 + Math.random() * 180, life: 650 + Math.random() * 300, c: i % 3 ? "#ffd84a" : "#ffffff", s: 4 + Math.random() * 3, k: 1 }); } // 2차 1.2: 전부 별
   }
   function burstAll(n, now) {
     if (!fxOn || !board) return;
     var cs = []; for (var y = 0; y < ROWS; y++) for (var x = 0; x < COLS; x++) if (board[y][x]) cs.push([x, y]);
-    for (var i = 0; i < n && cs.length; i++) { var c = cs[Math.floor(Math.random() * cs.length)]; addPart({ x: (c[0] + 0.5) * CELL, y: (c[1] + 0.5) * CELL, vx: (Math.random() - 0.5) * 260, vy: -(120 + Math.random() * 260), g: 900, t0: now + Math.random() * 80, life: 520 + Math.random() * 380, c: cellColor(board[c[1]][c[0]]), s: 4 + Math.random() * 5 }); }
+    for (var i = 0; i < n && cs.length; i++) { var c = cs[Math.floor(Math.random() * cs.length)]; addPart({ x: (c[0] + 0.5) * CELL, y: (c[1] + 0.5) * CELL, vx: (Math.random() - 0.5) * 260, vy: -(120 + Math.random() * 260), g: 900, t0: now + Math.random() * 80, life: 520 + Math.random() * 380, c: cellColor(board[c[1]][c[0]]), s: 0, k: 0 }, true); }
   }
   function shake(c) { if (!fxOn || !c) return; var d = c === "shkd" ? 0 : cineDelay; cv.classList.remove("shk2", "shk3", "shk4", "shkz", "shkd"); cv.style.setProperty("--cd", d + "ms"); void cv.offsetWidth; cv.classList.add(c); clearTimeout(shakeT); shakeT = setTimeout(function () { cv.classList.remove(c); }, 480 + d); }
-  var CINE_TIERS = [["#8f7bff", "#6fb8ff", "#b79cff"], ["#7be4c8", "#6fb8ff", "#a8f0d8"], ["#ff9fd0", "#b79cff", "#ffc6e4"], ["#ffb26b", "#ff9fb5", "#ffe08a"], ["#ff9fd0", "#7be4c8", "#ffe08a"]];
+  var CINE_TIERS = [ // 2차 2.1: 얼룩 [색, 중심 α] + 흔들림 [가로 px, 세로 px, 주기 ms]. 파란 밤 → 청록 → 분홍·보라 → 주황·노을 → 네 색
+    { b: [["#4f6bff", 0.34], ["#2f9bff", 0.30], ["#7a5cff", 0.34]], s: [6, 0, 16000] },
+    { b: [["#22d3a6", 0.26], ["#3fa0ff", 0.32], ["#5fe6c0", 0.24]], s: [9, 0, 14000] },
+    { b: [["#ff4fa8", 0.36], ["#a64dff", 0.40], ["#ff86c8", 0.30]], s: [12, 4, 12000] },
+    { b: [["#ff7a2e", 0.34], ["#ff4f86", 0.38], ["#ffc23a", 0.24]], s: [16, 8, 10000] },
+    { b: [["#ff3fb0", 0.42], ["#19e0b8", 0.30], ["#ffcf33", 0.26], ["#4f7dff", 0.42]], s: [20, 12, 8000] }];
+  var CINE_SPC = ["#3fd8ee", "#ffe45c", "#d98cff", "#6fe58a", "#ff7a90", "#5575ee", "#ffa040", "#ffd84a", "#ffffff", "#8ff5cf", "#ff9fd0"], CINE_SPI = {};
+  CINE_SPC.forEach(function (c, i) { CINE_SPI[c] = i; });
+  function cineSprMake() { // 2차 1.1: 입자 아틀라스 352×64(칸 32, 0행 글로우 점 · 1행 네 갈래 별). 한 번만 만든다(그라데이션은 여기서만)
+    if (!fxOn || cine.spr) return;
+    var c = document.createElement("canvas"), g, i; c.width = 352; c.height = 64; g = c.getContext("2d");
+    var star = function (cx, cy, ro, ri) { g.beginPath(); for (var j = 0; j < 8; j++) { var r = j % 2 ? ri : ro, a = -Math.PI / 2 + j * Math.PI / 4; g.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a)); } g.closePath(); g.fill(); };
+    for (i = 0; i < CINE_SPC.length; i++) {
+      var col = CINE_SPC[i], cx = i * 32 + 16, gr = g.createRadialGradient(cx, 16, 0, cx, 16, 16);
+      gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.16, cineRgba(col, 1)); gr.addColorStop(0.42, cineRgba(col, 0.5)); gr.addColorStop(1, cineRgba(col, 0));
+      g.fillStyle = gr; g.fillRect(i * 32, 0, 32, 32);
+      gr = g.createRadialGradient(cx, 48, 0, cx, 48, 16); gr.addColorStop(0, cineRgba(col, 0.55)); gr.addColorStop(1, cineRgba(col, 0));
+      g.fillStyle = gr; g.fillRect(i * 32, 32, 32, 32);
+      g.fillStyle = col; star(cx, 48, 15, 3.4); g.fillStyle = "#ffffff"; star(cx, 48, 8, 1.9);
+    }
+    cine.spr = c; cineWashMake();
+  }
+  var CINE_WB = ["rgb(255,72,160)", "rgb(72,128,255)", "rgb(150,96,255)"]; // 색 번짐 색 B(고정 문자열): 0 4줄 · 1 콤보 6~7 · 2 콤보 8+
+  function cineWashMake() { // 2차 3.1: 128×128 원형 3장. 0 → 색 A(중심 α), 0.38 → 색 B α1, 1 → 색 B α0. 흰 정지점 없음
+    var A = [["255,176,48", 0.50, "255,72,160"], ["48,224,176", 0.45, "72,128,255"], ["255,96,184", 0.80, "150,96,255"]];
+    cine.wspr = A.map(function (w) {
+      var c = document.createElement("canvas"), g, gr; c.width = c.height = 128; g = c.getContext("2d");
+      gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, "rgba(" + w[0] + "," + w[1] + ")"); gr.addColorStop(0.38, "rgba(" + w[2] + ",1)"); gr.addColorStop(1, "rgba(" + w[2] + ",0)");
+      g.fillStyle = gr; g.fillRect(0, 0, 128, 128); return c;
+    });
+  }
+  function cineWash(fxT, W, H, up) { // 2차 3.2: 560ms(효과 시계). 아래층 = 판 전체 색 B 0.06e + 스프라이트 0.24e, 위층 = 스프라이트 0.06e(낮음 등급은 아래층만)
+    var w = cine.wash; if (!w || !fxOn || !cine.wspr) return;
+    var u = (fxT - w.t) / 560; if (u >= 1) { cine.wash = null; return; } if (u < 0 || (up && cine.q === "low")) return;
+    var e = u < 0.16 ? u / 0.16 : Math.pow(1 - (u - 0.16) / 0.84, 1.5), R = (0.70 + 0.45 * (1 - (1 - u) * (1 - u))) * Math.max(W, H) * (W > H ? 0.6 : 1);
+    if (!up) { ctx.globalAlpha = 0.06 * e; ctx.fillStyle = CINE_WB[w.k]; ctx.fillRect(0, 0, W, H); }
+    ctx.globalAlpha = (up ? 0.06 : 0.24) * e; ctx.drawImage(cine.wspr[w.k], W / 2 - R, w.y - R, 2 * R, 2 * R);
+    ctx.globalAlpha = 1;
+  }
   function cineTier(lv) { return lv >= 10 ? 4 : lv >= 7 ? 3 : lv >= 5 ? 2 : lv >= 3 ? 1 : 0; }
   function cineRgba(h, a) { var n = parseInt(h.slice(1), 16); return "rgba(" + (n >> 16) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + a + ")"; }
   function cineBgMake(tier) { // 오로라 한 장을 미리 그림(판 시작·단계 변경 때만). 단계가 바뀌면 600ms 겹침
     if (!fxOn) return;
-    var b = cine.bg, W = COLS * CELL, H = ROWS * CELL, c = document.createElement("canvas"), g, R = 0.55 * Math.max(W, H), P = [[0.2, 0.25], [0.8, 0.5], [0.35, 0.85]];
-    c.width = W + 16; c.height = H; g = c.getContext("2d");
-    CINE_TIERS[tier].forEach(function (col, i) { var x = P[i][0] * (W + 16), y = P[i][1] * H, gr = g.createRadialGradient(x, y, 0, x, y, R); gr.addColorStop(0, cineRgba(col, 0.22)); gr.addColorStop(1, cineRgba(col, 0)); g.fillStyle = gr; g.fillRect(0, 0, W + 16, H); });
+    var b = cine.bg, W = COLS * CELL, H = ROWS * CELL, c = document.createElement("canvas"), g, M = Math.max(W, H), P = [[0.14, 0.10, 0.44], [0.88, 0.36, 0.36], [0.26, 0.66, 0.40], [0.80, 0.90, 0.36]]; // 2차 2.2: (x, y 캔버스 비율, 반지름 max(W,H) 비율)
+    c.width = W + 48; c.height = H + 32; g = c.getContext("2d");
+    CINE_TIERS[tier].b.forEach(function (e, i) { var col = e[0], a = e[1], x = P[i][0] * c.width, y = P[i][1] * c.height, R = P[i][2] * M, gr = g.createRadialGradient(x, y, 0, x, y, R); gr.addColorStop(0, cineRgba(col, a)); gr.addColorStop(0.5, cineRgba(col, a * 0.45)); gr.addColorStop(1, cineRgba(col, 0)); g.fillStyle = gr; g.fillRect(0, 0, c.width, c.height); });
     var same = b.cv && b.tier >= 0 && b.cv.width === c.width && b.cv.height === c.height;
     b.old = same ? b.cv : null; b.xf = same ? performance.now() : 0; b.cv = c; b.tier = tier;
   }
@@ -1324,18 +1359,19 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
   }
   function cineBgDraw(nowT, W, H) {
     var b = cine.bg; if (!fxOn || cine.bgOff || !b.cv) return;
-    var dx = cine.q === "low" ? 0 : -8 + 8 * Math.sin(nowT / 14000 * 2 * Math.PI), al = 0.55 + 0.06 * cine.pulse, x = b.xf ? Math.min(1, (nowT - b.xf) / 600) : 1;
+    var sw = CINE_TIERS[Math.max(0, b.tier)].s, lo = cine.q === "low", al = 0.90 + 0.10 * cine.pulse, x = b.xf ? Math.min(1, (nowT - b.xf) / 600) : 1; // 2차 2.3: 층 0.90+0.10·pulse
+    var dx = -24 + (lo ? 0 : sw[0] * Math.sin(nowT / sw[2] * 2 * Math.PI)), dy = -16 + (lo ? 0 : sw[1] * Math.sin(nowT / (sw[2] * 1.3) * 2 * Math.PI));
     if (x >= 1) { b.old = null; b.xf = 0; }
     ctx.save(); if (flipped) { ctx.translate(W, 0); ctx.scale(-1, 1); } // 반전 중엔 오로라도 뒤집힘(세상이 뒤집힌 느낌)
-    if (b.old) { ctx.globalAlpha = al * (1 - x); ctx.drawImage(b.old, dx, 0); }
-    ctx.globalAlpha = al * x; ctx.drawImage(b.cv, dx, 0);
+    if (b.old) { ctx.globalAlpha = al * (1 - x); ctx.drawImage(b.old, dx, dy); }
+    ctx.globalAlpha = al * x; ctx.drawImage(b.cv, dx, dy);
     ctx.restore();
     var st = b.stars;
     if (st.length) {
-      var v = Math.min(22, 4 + level * 1.5) * (cine.fill > 0.5 ? 1.5 : 1), amp = combo >= 3 ? 0.45 : 0.3, sc = 1 + 0.25 * cine.pulse;
-      ctx.fillStyle = "#fff";
+      var v = Math.min(48, 6 + 4 * level) * (cine.fill > 0.5 ? 1.5 : 1), amp = combo >= 3 ? 0.45 : 0.3, sc = 1 + 0.25 * cine.pulse;
+      var sp = cine.spr;
       var dts = b.lt ? Math.max(0, Math.min(100, nowT - b.lt)) : 0; b.off = (b.off + v * dts / 1000) % H; // 위상 누적: 속도(레벨·쌓임 50%)가 바뀌어도 별이 순간이동하지 않음
-      for (var i = 0; i < st.length; i++) { var p = st[i], y = (p.y + b.off) % H, z = p.s * sc; ctx.globalAlpha = Math.max(0, 0.35 + amp * Math.sin(nowT / 600 + p.ph)); ctx.fillRect(p.x - z / 2, y - z / 2, z, z); }
+      for (var i = 0; i < st.length; i++) { var p = st[i], y = (p.y + b.off) % H, z = p.s * 2.8 * sc; ctx.globalAlpha = Math.max(0, 0.35 + amp * Math.sin(nowT / 600 + p.ph)); if (sp) ctx.drawImage(sp, 256, 0, 32, 32, p.x - z / 2, y - z / 2, z, z); } // 2차 1.3: 흰 글로우(인덱스 8)
       ctx.globalAlpha = 1;
     }
     b.lt = nowT;
@@ -1358,6 +1394,24 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
   }
   var cineBarT = 0;
   function cineBars(c) { if (!fxOn || !c) return; var e = $("cine"); e.classList.remove("b4", "b6"); e.style.setProperty("--cd", cineDelay + "ms"); void e.offsetWidth; e.classList.add(c); clearTimeout(cineBarT); cineBarT = setTimeout(function () { e.classList.remove(c); }, 900 + cineDelay); }
+  function cineVigMake(W, H) { // 2차 4.2: 판 크기 W×H, 색 rgb(12,7,30). 위아래 띠 0.20H(α .84→.52→.18→0), 좌우 띠 0.10W(α .40→0). 판 크기가 바뀔 때만 다시 만든다
+    var c = document.createElement("canvas"), g, gr, bh = 0.20 * H, sw = 0.10 * W, C = "rgba(12,7,30,";
+    c.width = W; c.height = H; g = c.getContext("2d");
+    var tb = function (y0, y1) { gr = g.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, C + "0.84)"); gr.addColorStop(0.3, C + "0.52)"); gr.addColorStop(0.65, C + "0.18)"); gr.addColorStop(1, C + "0)"); g.fillStyle = gr; g.fillRect(0, Math.min(y0, y1), W, bh); };
+    var lr = function (x0, x1) { gr = g.createLinearGradient(x0, 0, x1, 0); gr.addColorStop(0, C + "0.40)"); gr.addColorStop(1, C + "0)"); g.fillStyle = gr; g.fillRect(Math.min(x0, x1), 0, sw, H); };
+    tb(0, bh); tb(H, H - bh); lr(0, sw); lr(W, W - sw);
+    cine.vcv = c;
+  }
+  function cineVig(nowT, W, H) { // 2차 4.3: 들어옴 110ms(위·아래 띠가 밀려 들어옴) → 유지 → 마지막 260ms 직선으로 옅어짐. 블록·조각보다 먼저 그려 가리지 않음
+    var v = cine.vig; if (!v || !fxOn) return;
+    var a = nowT - v.tr; if (a >= v.d) { cine.vig = null; return; } if (a < 0) return;
+    if (!cine.vcv || cine.vcv.width !== W || cine.vcv.height !== H) cineVigMake(W, H);
+    var k = 1, off = 0, hh = H / 2;
+    if (a < 110) { k = 1 - Math.pow(1 - a / 110, 3); off = (1 - k) * 0.20 * H; } else if (a > v.d - 260) k = (v.d - a) / 260;
+    ctx.globalAlpha = k * v.m;
+    ctx.drawImage(cine.vcv, 0, 0, W, hh, 0, -off, W, hh); ctx.drawImage(cine.vcv, 0, hh, W, hh, 0, hh + off, W, hh);
+    ctx.globalAlpha = 1;
+  }
   function cineRays(fxT, W, H) { // 빛줄기(T 2.5): 경로 하나에 삼각형 n개, fill 1회. 블록보다 먼저 그려 블록은 항상 또렷
     var r = cine.rays; if (!r) return;
     var u = (fxT - r.t) / 520; if (u >= 1) { cine.rays = null; return; } if (u < 0) return;
@@ -1368,15 +1422,17 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
   }
   function banner(t) { if (!fxOn) return; var e = $("banner"); e.textContent = t; e.style.setProperty("--cd", cineDelay + "ms"); e.classList.remove("on"); void e.offsetWidth; e.classList.add("on"); }
   function drawFx(now) {
+    cineWash(now, cv.width, cv.height, true); // 2차 3.2 위층(블록·쓸기 띠 위, 입자 아래). 입자가 없어도 그린다
     if (!parts.length) return;
-    var W = COLS * CELL, j = 0;
-    for (var i = 0; i < parts.length; i++) {
+    var W = COLS * CELL, j = 0, sp = cine.spr; if (!sp) { parts.length = 0; return; }
+    for (var i = 0; i < parts.length; i++) { // 2차 1.3: 입자 하나에 미리 그린 글로우·별 drawImage 1번(네모 없음, 합성 방식 기본)
       var p = parts[i], a = now - p.t0; if (a > p.life) continue; parts[j++] = p; if (a < 0) continue;
-      var s = a / 1000, x = p.x + p.vx * s, y = p.y + p.vy * s + 0.5 * p.g * s * s, al = 1 - a / p.life, z = p.s * (p.tw ? 1 : 0.6 + 0.4 * al);
-      if (p.tw) al *= 0.55 + 0.45 * Math.sin(a / 45 + i);
+      var s = a / 1000, x = p.x + p.vx * s, y = p.y + p.vy * s + 0.5 * p.g * s * s, al = 1 - a / p.life, ix = CINE_SPI[p.c], z;
+      if (ix == null) ix = 8;
+      z = p.k ? p.s * 3.2 * (0.72 + 0.28 * Math.sin(a / 60 + i)) : p.s * 2.6 * (0.55 + 0.45 * al);
       if (flipped) x = W - x;
-      ctx.globalAlpha = al; ctx.fillStyle = p.c;
-      if (p.tw) { ctx.fillRect(x - z, y - 0.75, z * 2, 1.5); ctx.fillRect(x - 0.75, y - z, 1.5, z * 2); } else ctx.fillRect(x - z / 2, y - z / 2, z, z);
+      ctx.globalAlpha = Math.min(1, al * 1.7);
+      ctx.drawImage(sp, ix * 32, p.k * 32, 32, 32, x - z / 2, y - z / 2, z, z);
     }
     parts.length = j; ctx.globalAlpha = 1;
   }
@@ -1386,7 +1442,7 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
     if (cine.warp && nowT - cine.warp.t0 >= cine.warp.S) warpEnd(nowT); // 끝난 슬로모는 lag에 접음
     fxT = fxc(nowT);
     ctx.clearRect(0, 0, cv.width, cv.height);
-    cinePulse(); cineBgDraw(nowT, W, H); cineRays(fxT, W, H);
+    cinePulse(); cineBgDraw(nowT, W, H); cineRays(fxT, W, H); cineWash(fxT, W, H, false); cineVig(nowT, W, H); // 순서: 오로라 → 빛줄기 → 번짐 아래층 → 비네팅 → 격자 → 블록 → 고스트·조각
     ctx.strokeStyle = "#4a3d86"; ctx.lineWidth = 1;
     for (var i = 1; i < COLS; i++) { ctx.beginPath(); ctx.moveTo(i * CELL + .5, 0); ctx.lineTo(i * CELL + .5, ROWS * CELL); ctx.stroke(); }
     for (var j = 1; j < ROWS; j++) { ctx.beginPath(); ctx.moveTo(0, j * CELL + .5); ctx.lineTo(COLS * CELL, j * CELL + .5); ctx.stroke(); }
