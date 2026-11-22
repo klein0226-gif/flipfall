@@ -179,10 +179,21 @@ canvas#board.shkd { animation: shkd .11s ease-out; }
 .boardwrap.wide { width: min(600px, 100%); }
 #sizeBtn { font-size: 14px; padding: 8px 12px; }
 [hidden] { display: none !important; }
-#roomTabs, #petTabs { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
-#roomTabs button, #petTabs button { font-size: 13px; padding: 4px 9px; border-width: 2px; border-radius: 10px; box-shadow: 0 2px 0 var(--sh); }
-#roomTabs button.on, #petTabs button.on { background: var(--accent); color: #fff; }
+#roomTabs, #petTabs, #itemTabs { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+#roomTabs button, #petTabs button, #itemTabs button { font-size: 13px; padding: 4px 9px; border-width: 2px; border-radius: 10px; box-shadow: 0 2px 0 var(--sh); }
+#roomTabs button.on, #petTabs button.on, #itemTabs button.on { background: var(--accent); color: #fff; }
 #petTabs:empty { display: none; }
+/* 상점 탭: 설계서는 #shopTabs지만 마이 룸 가구 상점(#shopTabs, 동적)과 id가 겹쳐 #itemTabs로 */
+#itemTabs { flex-wrap: nowrap; width: 100%; margin-bottom: 6px; } #itemTabs button { flex: 1; padding: 6px 2px; white-space: nowrap; }
+#itemMenu .shoppills { flex-wrap: nowrap; gap: 4px; } #itemMenu .shoppills .pill { font-size: 13px; padding: 5px 8px 4px; white-space: nowrap; }
+@media (max-width: 340px) { #itemMenu .shoppills .pill { font-size: 12px; padding: 4px 6px 3px; } }
+.irow .sbadge { display: inline-block; font-size: 12px; line-height: 1; padding: 3px 6px; margin-left: 4px; border-radius: 999px; background: var(--warn); color: #fff; vertical-align: 2px; white-space: nowrap; }
+.irow .sbadge.once { background: var(--accent); }
+.irow .bt button:disabled, .ptix button:disabled, .pfree button:disabled { opacity: .5; box-shadow: none; filter: grayscale(.6); cursor: default; }
+.ptix { display: flex; gap: 6px; justify-content: center; margin: 6px 0 2px; }
+#petPity, #petTixNote, .pjoin, .podds small { font-size: 12px; }
+.plast { margin-top: 10px; }
+.ptix button { flex: 1; white-space: nowrap; font-size: 14px; padding: 8px 4px; }
 .pgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 6px 0; }
 .pgrid button { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 12px; line-height: 1.2; padding: 6px 2px; border-width: 2px; border-radius: 12px; box-shadow: 0 2px 0 var(--sh); white-space: normal; }
 .pgrid button.on { border-color: var(--ok); background: #e9fff3; }
@@ -236,7 +247,7 @@ canvas#board.shkd { animation: shkd .11s ease-out; }
 .pfree button { font-size: 15px; padding: 7px 14px; }
 #toast { position: fixed; left: 50%; bottom: calc(24px + var(--sab)); transform: translateX(-50%); z-index: 80; max-width: calc(100vw - 32px); padding: 8px 16px; border-radius: 14px; background: rgba(42,33,80,.92); color: #fff; font: 400 16px/1.3 var(--font-display); text-align: center; pointer-events: none; opacity: 0; transition: opacity .25s; }
 #toast.on { opacity: 1; }
-#attendBtn.new::after, #petBtn.new::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: 4px; border-radius: 50%; background: var(--warn); vertical-align: top; }
+#attendBtn.new::after, #petBtn.new::after, #itemBtn.new::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: 4px; border-radius: 50%; background: var(--warn); vertical-align: top; }
 #roomTabs button.lock { opacity: .55; }
 .room { position: relative; width: 100%; max-width: 340px; aspect-ratio: 360/340; border-radius: 14px; overflow: hidden; border: 3px solid var(--sh); }
 .room canvas { display: block; width: 100%; height: auto; aspect-ratio: 360/340; background: #fdf3e6; }
@@ -446,7 +457,7 @@ body.playing #home { display: none; }
       <button id="skinBtn">스킨</button>
       <button id="rankBtn">랭킹</button>
       <button id="achBtn">업적</button>
-      <button id="itemBtn">상점</button>
+      <button id="itemBtn">🛒 상점</button>
       <button id="setBtn">설정</button>
       <button id="roomBtn">마이 룸</button>
     </div>
@@ -461,7 +472,8 @@ body.playing #home { display: none; }
     <button id="skinBack">뒤로</button>
   </div>
   <div class="menu2" id="itemMenu" hidden>
-    <div class="coinline">코인 <b id="coins3">0</b></div>
+    <div class="coinline coinpills shoppills"><span class="pill">🪙 <b id="coins3">0</b></span><span class="pill">💎 <b id="shopGem">0</b></span><span class="pill">🎟 <b id="shopTix">0</b></span></div>
+    <div id="itemTabs"><button data-stab="pack" class="on">🎁 패키지</button><button data-stab="gacha">🎰 펫 뽑기</button><button data-stab="item">🧨 아이템</button></div>
     <div class="card" id="itemList"></div>
     <div class="coinline" id="itemMsg"></div>
     <button id="itemBack">뒤로</button>
@@ -664,10 +676,69 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
     freeze: { name: "반전 멈춤", icon: "⏱", cost: 60, desc: "10초 동안 뒤집힘 카운트가 멈춰요" }
   };
   var ITEM_IDS = ["row", "all", "freeze"], ITEM_MAX = 9;
-  var save = { coins: 0, owned: ["basic"], skin: "basic", ach: [] };
+  // ── 상점 패키지(11/22, 값은 임시·보스 폰 시험 뒤 조정). cur: "mats"(💎) | "coins"(🪙). give: tix 뽑기권 · items 아이템 · coins 코인 · furn 가구(마이 룸 보관함)
+  // 정가(따로 사면)·할인 배지는 packValue가 GACHA.price·ITEMS.cost·IT.c로 계산(숫자 하드코딩 없음)
+  var SHOP_PACKS = [
+    { id: "start", icon: "🎁", name: "시작 패키지", cur: "mats", price: 300, once: true, give: { tix: 2, items: { row: 3, freeze: 2 }, coins: 300 } },
+    { id: "items", icon: "🧨", name: "아이템 묶음", cur: "coins", price: 280, give: { items: { row: 3, freeze: 2, all: 1 } } },
+    { id: "pull11", icon: "🎰", name: "뽑기 10+1", cur: "mats", price: 5000, give: { tix: 11 } },
+    { id: "bedroom", icon: "🛏", name: "포근한 침실 세트", cur: "mats", price: 650, once: true, give: { furn: ["bed", "wardrobe", "rug_pink", "floorlamp", "plant"] } },
+    { id: "catroom", icon: "🐱", name: "고양이 놀이방", cur: "mats", price: 440, once: true, give: { furn: ["cattower", "catbed", "toychest", "teddy"] } }
+  ];
+  var SHOP_TIX_MAX = 999, SHOP_FURN_MAX = 99;
+  function packGet(id) { for (var i = 0; i < SHOP_PACKS.length; i++) if (SHOP_PACKS[i].id === id) return SHOP_PACKS[i]; return null; }
+  // 따로 사면 얼마(순수): {mats, coins}
+  function packValue(p) {
+    var g = p.give || {}, v = { mats: 0, coins: 0 };
+    v.mats += (g.tix || 0) * GACHA.price;
+    Object.keys(g.items || {}).forEach(function (k) { v.coins += g.items[k] * ITEMS[k].cost; });
+    v.coins += g.coins || 0;
+    (g.furn || []).forEach(function (k) { v.mats += IT[k].c; });
+    return v;
+  }
+  // 할인율(%) — 가격과 정가가 한 통화일 때만, 아니면 0
+  function packOff(p) { var v = packValue(p), o = p.cur === "mats" ? "coins" : "mats"; if (v[o] || !v[p.cur]) return 0; return Math.round((1 - p.price / v[p.cur]) * 100); }
+  // 저장값 정리(순수): 옛 저장(없음)·배열·문자열은 기본값. once는 1회 한정 패키지 id만, tix 0~999, n 누적 구매 수
+  function shopNorm(q) {
+    q = q && typeof q === "object" && !Array.isArray(q) ? q : {};
+    var on = q.once && typeof q.once === "object" && !Array.isArray(q.once) ? q.once : {}, o = {};
+    SHOP_PACKS.forEach(function (p) { if (p.once && Object.prototype.hasOwnProperty.call(on, p.id) && on[p.id]) o[p.id] = 1; });
+    return { tix: clampI(q.tix, 0, SHOP_TIX_MAX, 0), once: o, n: clampI(q.n, 0, 1e9, 0) };
+  }
+  // 패키지 구매(순수, st = save 모양 {mats, coins, items, shop, home2}): 검사 → 차감 → 지급. 실패하면 st는 그대로. persist는 부르는 쪽(Pay.buy)
+  function packBuy(st, id) {
+    var p = typeof id === "string" ? packGet(id) : null;
+    if (!p) return { ok: false, err: "없는 상품이에요" };
+    if (!st || typeof st !== "object") return { ok: false, err: "저장이 이상해요" };
+    if (Array.isArray(st.items) || (st.home2 && Array.isArray(st.home2.owned))) return { ok: false, err: "저장이 이상해요" };
+    var sh = shopNorm(st.shop), g = p.give || {}, items = st.items && typeof st.items === "object" ? st.items : {}, i, k;
+    if (p.once && sh.once[p.id]) return { ok: false, err: "이미 샀어요 (1회 한정)" };
+    var ik = Object.keys(g.items || {});
+    for (i = 0; i < ik.length; i++) { k = ik[i]; var have = Math.max(0, Math.floor(+items[k] || 0)); if (have + g.items[k] > ITEM_MAX) return { ok: false, err: ITEMS[k].name + " 자리가 모자라요 (지금 " + have + "/" + ITEM_MAX + ")" }; }
+    var own = st.home2 && st.home2.owned && typeof st.home2.owned === "object" ? st.home2.owned : {};
+    for (i = 0; i < (g.furn || []).length; i++) { k = g.furn[i]; if (Math.max(0, Math.floor(+own[k]) || 0) + 1 > SHOP_FURN_MAX) return { ok: false, err: IT[k].n + "은(는) 보관함에 " + SHOP_FURN_MAX + "개까지예요" }; }
+    if (g.tix && sh.tix + g.tix > SHOP_TIX_MAX) return { ok: false, err: "뽑기권은 " + SHOP_TIX_MAX + "장까지 가질 수 있어요 (지금 " + sh.tix + "장)" };
+    var bal = st[p.cur];
+    if (typeof bal !== "number" || !isFinite(bal) || bal < 0) return { ok: false, err: "잔액이 이상해요" };
+    if (bal < p.price) return { ok: false, err: p.cur === "mats" ? "다이아가 " + (p.price - bal) + " 모자라요 · 📅 오늘 보상에서 받아요" : "코인이 " + (p.price - bal) + " 모자라요 · 한 판 하면 벌어요" };
+    st[p.cur] = bal - p.price;
+    if (!st.items || typeof st.items !== "object") st.items = items;
+    ik.forEach(function (k) { st.items[k] = Math.max(0, Math.floor(+st.items[k] || 0)) + g.items[k]; });
+    if (g.coins) st.coins = (+st.coins || 0) + g.coins;
+    if (g.furn && g.furn.length) {
+      if (!st.home2 || typeof st.home2 !== "object") st.home2 = { sp: {}, owned: {} };
+      if (!st.home2.owned || typeof st.home2.owned !== "object") st.home2.owned = {};
+      g.furn.forEach(function (k) { st.home2.owned[k] = Math.max(0, Math.floor(+st.home2.owned[k]) || 0) + 1; });
+    }
+    sh.tix += g.tix || 0; if (p.once) sh.once[p.id] = 1; sh.n = Math.min(1e9, sh.n + 1); st.shop = sh;
+    return { ok: true, pack: p };
+  }
+  var save = { coins: 0, owned: ["basic"], skin: "basic", ach: [] }, launchFix = false, launchReset = false; // launchReset: 이번 로드에서 launch2 정리로 다이아를 0으로 만들었으면 옛 방 환급도 안 더함
   try { var sv = JSON.parse(localStorage.getItem("flipTetrisSave")); if (sv && sv.owned) save = sv; } catch (e) {}
-  save.coins = Math.max(0, Math.floor(+save.coins || 0)); save.noAds = !!save.noAds; save.sfx = save.sfx !== false; save.bgm = save.bgm !== false; save.rotDir = save.rotDir === "ccw" ? "ccw" : "cw"; if (!save.board || typeof save.board !== "object" || Array.isArray(save.board)) save.board = {}; Object.keys(save.board).forEach(function (k) { var a = save.board[k]; save.board[k] = Array.isArray(a) ? a.filter(function (e) { return e && +e.v > 0; }).map(function (e) { return { v: Math.floor(+e.v), t: +e.t || 0, n: String(e.n || "").slice(0, 8) }; }).sort(function (x, y) { return y.v - x.v; }).slice(0, 10) : []; }); save.vol = typeof save.vol === "number" ? Math.max(0, Math.min(1, save.vol)) : 0.6; save.mats = Math.max(0, Math.floor(+save.mats || 0)); if (!save.launch1) { if (save.mats >= 1000000) save.mats = 0; save.launch1 = 1; } if (save.items && save.items.col !== undefined) { save.coins = (+save.coins || 0) + Math.max(0, Math.min(9, Math.floor(+save.items.col || 0))) * 40; delete save.items.col; } if (!save.visited || typeof save.visited !== "object") save.visited = {}; if (!save.items) save.items = {}; ITEM_IDS.forEach(function (k) { save.items[k] = Math.max(0, Math.min(ITEM_MAX, +save.items[k] || 0)); }); if (!save.ach) save.ach = []; if (typeof save.bestScore !== "number") save.bestScore = 0; if (typeof save.rank !== "number") save.rank = 0;
+  save.coins = Math.max(0, Math.floor(+save.coins || 0)); save.noAds = !!save.noAds; save.sfx = save.sfx !== false; save.bgm = save.bgm !== false; save.rotDir = save.rotDir === "ccw" ? "ccw" : "cw"; if (!save.board || typeof save.board !== "object" || Array.isArray(save.board)) save.board = {}; Object.keys(save.board).forEach(function (k) { var a = save.board[k]; save.board[k] = Array.isArray(a) ? a.filter(function (e) { return e && +e.v > 0; }).map(function (e) { return { v: Math.floor(+e.v), t: +e.t || 0, n: String(e.n || "").slice(0, 8) }; }).sort(function (x, y) { return y.v - x.v; }).slice(0, 10) : []; }); save.vol = typeof save.vol === "number" ? Math.max(0, Math.min(1, save.vol)) : 0.6; save.mats = Math.floor(+save.mats || 0); if (!isFinite(save.mats) || save.mats < 0) save.mats = 0; if (save.launch2 !== 1) { save.mats = 0; launchReset = true; save.launch2 = 1; delete save.launch1; launchFix = save === sv; } /* 출시(11/22): launch2 없는 저장은 전부 테스트 저장 → 다이아 금액 무관 0, 이후 획득분은 유지 */ if (save.items && save.items.col !== undefined) { save.coins = (+save.coins || 0) + Math.max(0, Math.min(9, Math.floor(+save.items.col || 0))) * 40; delete save.items.col; } if (!save.visited || typeof save.visited !== "object") save.visited = {}; if (!save.items || typeof save.items !== "object" || Array.isArray(save.items)) save.items = {}; ITEM_IDS.forEach(function (k) { save.items[k] = Math.max(0, Math.min(ITEM_MAX, +save.items[k] || 0)); }); if (!save.ach) save.ach = []; if (typeof save.bestScore !== "number") save.bestScore = 0; if (typeof save.rank !== "number") save.rank = 0;
   save.daily = dailyNorm(save.daily, save.pets && typeof save.pets === "object" ? save.pets.attend : 0); // 매일 보상(11/21): 옛 세이브는 기본값
+  save.shop = shopNorm(save.shop); // 상점(11/22): 뽑기권·1회 한정 구매 기록. 옛 저장은 기본값(시작 패키지 1회 살 수 있음)
+  if (launchFix) persist(); // 저장이 있던 경우만 정리 결과를 바로 기록(첫 실행 흐름은 그대로)
   // 계급: 점수 문턱은 임시값(시험 후 조정). 하드는 점수 ×1.5로 계산
   var RANKS = [{ n: "병아리", s: 0 }, { n: "새내기", s: 500 }, { n: "숙련자", s: 2000 }, { n: "고수", s: 5000 }, { n: "달인", s: 10000 }, { n: "전설", s: 20000 }];
   function rankOf(v) { var i = 0; while (i + 1 < RANKS.length && v >= RANKS[i + 1].s) i++; return i; }
@@ -790,20 +861,66 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
     while (hit(piece.m, piece.x, piece.y) && piece.y > -3) piece.y--;
     save.items[id]--; persist(); updateItems(); sfx("item"); collectGems(gotG, true); pop(ITEMS[id].name + "!" + (gotG ? "\n💎 +" + gotG : "")); buzz(25); updateHud();
   }
+  // 글자칸에 쓰고, 다시 그린 뒤 화면 밖이면 보이게 끌어옴(상점·분양샵 목록이 길어 아래 글자칸이 안 보이던 문제, 11/22)
+  function say(id, t) { var el = $(id); el.textContent = t; setTimeout(function () { var r = el.getBoundingClientRect(); if (t && el.offsetParent && (r.bottom > innerHeight || r.top < 0)) el.scrollIntoView({ block: "nearest", behavior: "instant" }); }, 0); }
   function buyItem(id) {
-    var it = ITEMS[id], msg = $("itemMsg");
-    if (save.items[id] >= ITEM_MAX) { msg.textContent = it.name + "은(는) 최대 " + ITEM_MAX + "개까지 가질 수 있어요"; return; }
-    if (save.coins < it.cost) { msg.textContent = "코인이 " + (it.cost - save.coins) + " 모자라요"; return; }
-    save.coins -= it.cost; save.items[id]++; persist(); sfx("buy"); msg.textContent = it.name + " 구입!"; renderShop(); updateItems();
+    var it = ITEMS[id];
+    if (save.items[id] >= ITEM_MAX) { say("itemMsg", it.name + "은(는) 최대 " + ITEM_MAX + "개까지 가질 수 있어요"); return; }
+    if (save.coins < it.cost) { say("itemMsg", "코인이 " + (it.cost - save.coins) + " 모자라요 · 한 판 하면 벌어요"); sfx("over"); return; }
+    save.coins -= it.cost; save.items[id]++; persist(); sfx("buy"); say("itemMsg", it.name + " 구입!"); renderShop(); updateItems();
   }
-  // 현금 구매 자리: 결제 연동 없음(나중에 붙일 때 이 함수만 교체)
-  function buyCash(id) { $("itemMsg").textContent = "현금 구매는 아직 준비 중이에요 (" + (id === "noads" ? "광고 제거" : ITEMS[id].name) + ")"; }
+  // 결제 어댑터(11/22): 지금은 게임 재화(💎·🪙)만. 화면은 Pay.buy·Pay.cash만 부른다. 실제 결제(Play Billing+영수증 검증)는 보스 결정 뒤 이 객체만 교체
+  // payBusy: 나중에 비동기가 되면 콜백 전 재진입(연타) 거절. save.noAds는 계속 false
+  var payBusy = false;
+  var Pay = {
+    mode: "local",
+    list: function (cb) { cb(SHOP_PACKS); },
+    buy: function (id, cb) {
+      if (payBusy) { cb({ ok: false, err: "처리 중이에요" }); return; }
+      payBusy = true; var r;
+      try { r = packBuy(save, id); if (r.ok) persist(); } finally { payBusy = false; }
+      cb(r);
+    },
+    cash: function (id, cb) { var p = packGet(id); cb({ ok: false, err: "현금 구매는 아직 준비 중이에요 (" + (id === "noads" ? "광고 제거" : ITEMS.hasOwnProperty(id) ? ITEMS[id].name : p ? p.name : "상품") + ")" }); },
+    restore: null
+  };
+  function buyCash(id) { Pay.cash(id, function (r) { say("itemMsg", r.err); }); }
+  // 상점 화면(11/22): 탭 pack(패키지·기본) | gacha(펫 뽑기, 분양샵과 같은 코드) | item(아이템). 줄은 .irow 재사용
+  var shopView = "pack";
+  function curTxt(c, n) { return (c === "mats" ? "💎 " : "🪙 ") + n.toLocaleString("en-US"); }
+  function packGiveTxt(p) {
+    var g = p.give, a = [];
+    if (g.tix) a.push("🎟 뽑기권 " + g.tix);
+    ITEM_IDS.forEach(function (k) { if (g.items && g.items[k]) a.push(ITEMS[k].name + " " + g.items[k]); });
+    if (g.coins) a.push("🪙 " + g.coins);
+    if (g.furn) a.push(g.furn.map(function (k) { return IT[k].n; }).join(" · "));
+    return a.join(" · ");
+  }
   function renderItems() {
-    $("coins3").textContent = save.coins;
+    $("coins3").textContent = save.coins; $("shopGem").textContent = save.mats; $("shopTix").textContent = save.shop.tix;
+    [].forEach.call(document.querySelectorAll("#itemTabs [data-stab]"), function (b) { b.classList.toggle("on", b.dataset.stab === shopView); });
     var h = "";
-    ITEM_IDS.forEach(function (k) { var it = ITEMS[k]; h += "<div class='irow'><div>" + it.icon + " <b>" + it.name + "</b> × " + save.items[k] + "<small>" + it.desc + "</small></div><div class='bt'><button data-buy='" + k + "'>" + it.cost + "코인</button><button class='cash' data-cash='" + k + "'>현금 구매 준비중</button></div></div>"; });
-    h += "<div class='irow'><div>🚫 <b>광고 제거</b><small>광고를 영구히 없애요 (한 번만 결제)</small></div><div class='bt'>" + (save.noAds ? "<b>구매 완료</b>" : "<button class='cash' data-cash='noads'>현금 구매 준비중</button>") + "</div></div>";
+    if (shopView === "gacha") h = save.pets.joinGift ? petGachaHtml() : "<b>펫 뽑기</b><small class='pjoin' style='display:block'>첫 친구를 고르면 뽑기를 할 수 있어요 (💎 " + PET_JOIN + " 선물)</small><button class='primary' data-pgo='join'>🐾 첫 친구를 먼저 골라요</button>";
+    else if (shopView === "item") {
+      ITEM_IDS.forEach(function (k) { var it = ITEMS[k], full = save.items[k] >= ITEM_MAX; h += "<div class='irow' data-irow='" + k + "'><div>" + it.icon + " <b>" + it.name + "</b> × " + save.items[k] + "/" + ITEM_MAX + "<small>" + it.desc + "</small></div><div class='bt'><button data-buy='" + k + "'" + (full ? " disabled>가득" : ">🪙 " + it.cost) + "</button></div></div>"; });
+    } else {
+      SHOP_PACKS.forEach(function (p) {
+        var v = packValue(p), off = packOff(p), done = p.once && save.shop.once[p.id];
+        var val = [v.mats ? curTxt("mats", v.mats) : "", v.coins ? curTxt("coins", v.coins) : ""].filter(Boolean).join(" + ");
+        h += "<div class='irow' data-prow='" + p.id + "'><div>" + p.icon + " <b>" + p.name + "</b>" + (p.once ? "<span class='sbadge once'>1회 한정</span>" : off > 0 ? "<span class='sbadge'>-" + off + "%</span>" : "") +
+          "<small>" + packGiveTxt(p) + "</small><small>따로 사면 " + val + (p.once && off > 0 ? " (-" + off + "%)" : "") + "</small></div><div class='bt'><button data-pack='" + p.id + "'" + (done ? " disabled>구매 완료" : ">" + curTxt(p.cur, p.price)) + "</button></div></div>";
+      });
+      h += "<div class='irow' data-prow='noads'><div>🚫 <b>광고 제거</b><small>광고를 영구히 없애요 (한 번만 결제)</small></div><div class='bt'>" + (save.noAds ? "<b>구매 완료</b>" : "<button class='cash' data-cash='noads'>준비 중</button>") + "</div></div>";
+    }
     $("itemList").innerHTML = h;
+  }
+  function buyPack(id) {
+    Pay.buy(id, function (r) {
+      if (!r.ok) { say("itemMsg", r.err); sfx("over"); renderItems(); return; }
+      var p = r.pack; sfx("buy");
+      say("itemMsg", p.icon + " " + p.name + " 구매! " + (p.give.furn ? "마이 룸 보관함에 넣었어요" : p.give.tix ? "🎟 뽑기권은 펫 뽑기 탭에서 써요" : "아이템 칸에 넣었어요"));
+      renderShop(); updateItems(); renderItems();
+    });
   }
 
   function start(m) {
@@ -956,8 +1073,9 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
     if (AU.ctx.state === "running") play();
     else if (AU.ctx.state === "suspended" && !document.hidden) { // 첫 소리 누락 방지: 깨운 뒤 재생. 깨우는 중 연타한 소리는 최근 2개만(한꺼번에 몰려 울리지 않게)
       if (sfxWait) { sfxWait.push(play); if (sfxWait.length > 2) sfxWait.shift(); return; }
-      sfxWait = [play]; setTimeout(function () { sfxWait = null; }, 1500);
-      try { var q = AU.ctx.resume(); if (q && q.then) q.then(function () { var w = sfxWait || []; sfxWait = null; if (AU.ctx.state === "running") w.forEach(function (f) { f(); }); }).catch(function () { sfxWait = null; }); else sfxWait = null; } catch (e) { sfxWait = null; }
+      var w = sfxWait = [play], wt = setTimeout(function () { if (sfxWait === w) sfxWait = null; }, 1500); // 자기 대기열만 지운다(새 대기열을 옛 타이머가 지우지 않게)
+      var done = function () { clearTimeout(wt); if (sfxWait === w) sfxWait = null; };
+      try { var q = AU.ctx.resume(); if (q && q.then) q.then(function () { if (sfxWait !== w) return; done(); if (AU.ctx.state === "running") w.forEach(function (f) { f(); }); }).catch(done); else done(); } catch (e) { done(); }
     }
   }
   // BGM: 곡 3개(홈·플레이·마이 룸). 코드 4마디 × 8분음표, 곡마다 템포·코드·리듬이 다르다.
@@ -1263,12 +1381,12 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
         Object.keys(old.owned || {}).forEach(function (k) { back += OLDC[k] || 5; });
         (Array.isArray(old.zones) ? old.zones : []).forEach(function (z) { back += OLDZ[z] || 0; });
         for (var s = 1; s < (+old.size || 1) && s < 3; s++) back += OLDS[s];
-        if (back > 0) { save.mats = (save.mats || 0) + back; save.refund = back; }
+        if (back > 0 && !launchReset) { save.mats = (save.mats || 0) + back; save.refund = back; } // launch2 정리가 일어난 로드면 환급 없이 0 유지(옛 방도 테스트 저장)
       }
       delete save.home;
     }
     if (!h.sp || typeof h.sp !== "object") h.sp = {};
-    if (!h.owned || typeof h.owned !== "object") h.owned = {};
+    if (!h.owned || typeof h.owned !== "object" || Array.isArray(h.owned)) h.owned = {};
     Object.keys(h.owned).forEach(function (k) { var v = clampI(h.owned[k], 0, 99, 0); if (!IT[k] || !v) delete h.owned[k]; else h.owned[k] = v; });
     SPACE_ORDER.forEach(function (sp) { if (h.sp[sp] || sp === "home") h.sp[sp] = cleanRoom(sp, h.sp[sp]); });
     Object.keys(h.sp).forEach(function (k) { if (SPACE_ORDER.indexOf(k) < 0) delete h.sp[k]; });
@@ -1412,9 +1530,11 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
   // 뽑기(순수, rng 주입): n회(GACHA.counts 중 하나), 다이아 price×n을 먼저 한 번에 확인한 뒤에만 진행(모자라면 아무것도 안 바뀜).
   // 회차마다 gachaDist로 등급 → 그 등급 안 종은 균등. 카운터는 st.pull, 이상한 값은 먼저 범위 안으로 정리
   // free=true: 하루 무료 1회용(1회만, 가격 0, 천장 카운터는 똑같이 올라감). 하루 1번 확인은 dailyFreeOk/dailyFreeUse가 함
+  // free="tix": 뽑기권(11/22 상점) — 가격 0, n은 1 또는 10. 장수 확인·차감은 부르는 쪽(save.shop.tix). 그 밖의 값은 유료와 같음
   function petPull(st, mats, rng, n, free) {
     rng = typeof rng === "function" ? rng : Math.random; n = n === undefined ? 1 : n;
-    if (GACHA.counts.indexOf(n) < 0 || (free && n !== 1)) return { ok: false, err: "뽑기 횟수가 이상해요", mats: mats };
+    if (free !== true && free !== "tix") free = false;
+    if (GACHA.counts.indexOf(n) < 0 || (free === true && n !== 1)) return { ok: false, err: "뽑기 횟수가 이상해요", mats: mats };
     if (typeof mats !== "number" || !isFinite(mats) || mats < 0) return { ok: false, err: "다이아 값이 이상해요", mats: mats };
     if (!st || typeof st !== "object" || !Array.isArray(st.owned)) return { ok: false, err: "펫 저장이 이상해요", mats: mats };
     var cost = free ? 0 : GACHA.price * n;
@@ -2106,6 +2226,7 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
     var st = save.pets;
     $("petBtn").classList.toggle("new", !st.joinGift || dailyFreeReady() || idleReady());
     $("attendBtn").classList.toggle("new", dailyAny());
+    $("itemBtn").classList.toggle("new", !save.shop.once.start); // 상점 빨간 점: 시작 패키지(1회 한정)를 아직 안 샀을 때
     if (!$("dailyPop").hidden) renderDaily();
   }
   // 오늘의 보상 패널: 받을 게 있을 때만 세션당 한 번 자동으로 펼침(처음 고르기 화면이 열려 있으면 다음 홈 진입 때)
@@ -2120,8 +2241,42 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
     try { if (sessionStorage.getItem("flipPetAuto")) { petAuto = true; return; } sessionStorage.setItem("flipPetAuto", "1"); } catch (e) {}
     petAuto = true; petOpen();
   }
-  function petOpen(tab) { if (tab) petTab = tab; petLast = []; petSel = null; petPick = []; petWarn = null; $("homeMain").hidden = true; $("petMenu").hidden = false; $("petMsg").textContent = ""; renderPets(); }
-  function petSay(t) { $("petMsg").textContent = t; }
+  function petOpen(tab) { if (tab) petTab = tab; petLast = []; petSel = null; petPick = []; petWarn = null; $("itemMenu").hidden = true; $("itemList").innerHTML = ""; $("homeMain").hidden = true; $("petMenu").hidden = false; $("petMsg").textContent = ""; renderPets(); }
+  // 상점 펫 뽑기 탭과 분양샵이 같은 코드를 쓴다: 상점이 열려 있으면 상점 쪽 글자칸·화면으로
+  function shopOn() { return !$("itemMenu").hidden; }
+  function petSay(t) { say(shopOn() ? "itemMsg" : "petMsg", t); }
+  // 뽑기 UI(분양샵 🎰 뽑기 · 상점 🎰 펫 뽑기 공용). id(petPity·petOdds·petLast)가 겹치지 않게 열 때 다른 쪽을 비운다
+  function petGachaHtml() {
+    var st = save.pets, q = st.pull, fr = dailyFreeOk(save.daily, dayNum()), tx = save.shop.tix, h = "";
+    h += "<div class='pfree'><button class='primary' data-pfree='1'" + (fr ? "" : " disabled") + ">" + (fr ? "🎁 오늘 무료 1회" : "🎁 무료 1회는 내일 또 와요") + "</button></div>";
+    h += "<div class='label'>🎰 뽑기 · 1회 💎 " + GACHA.price + " · 모든 등급(" + PET_TIERS.map(function (t) { return t[1]; }).join("·") + ")이 나와요</div>" +
+      "<small style='display:block' id='petPity'>확정까지: " + PET_TIERS.filter(function (t) { return GACHA.ceil.hasOwnProperty(t[0]); }).map(function (t) { return t[1] + (PET_TIX[t[0]] < PET_TIERS.length - 1 ? " 이상 " : " ") + (GACHA.ceil[t[0]] - q[t[0]]) + "회"; }).join(" · ") + "</small>" +
+      "<div class='ppull'>" + GACHA.counts.map(function (n) { return "<button class='primary' data-ppull='" + n + "'>" + n + "회 · 💎 " + GACHA.price * n + "</button>"; }).join("") + "</div>" +
+      "<div class='ptix'>" + GACHA.counts.map(function (n) { return "<button data-ptix='" + n + "'" + (tx >= n ? "" : " disabled") + ">🎟 " + n + "장 쓰기</button>"; }).join("") + "</div>" +
+      "<small style='display:block' id='petTixNote'>🎟 뽑기권 " + tx + "장 · 확률은 뽑기와 같아요</small>" + petOddsBtn();
+    if (petLast.length) h += "<div class='label plast'>방금 뽑은 펫</div><div class='pgrid' id='petLast'>" + petLast.map(function (x) { var c = petTierC(x.tier); return "<div class='pres" + (x.force ? " force" : "") + "' data-rtier='" + x.tier + "' style='border-color:" + c[3] + "'>" + petFace(x.id) + PET[x.id].name + petTag(x.tier) + "</div>"; }).join("") + "</div>";
+    return h;
+  }
+  // 뽑기 버튼 처리(공용): 처리했으면 true
+  function petGachaClick(d) {
+    var st = save.pets, r;
+    if (d.podds) { petOdds = !petOdds; if (shopOn()) renderItems(); else renderPets(); return true; }
+    if (!(d.ppull || d.pfree || d.ptix)) return false;
+    if (d.pfree && !dailyFreeOk(save.daily, dayNum())) { petSay("오늘 무료 뽑기는 이미 썼어요"); petDone(); return true; }
+    var n = d.pfree ? 1 : +(d.ptix || d.ppull);
+    if (GACHA.counts.indexOf(n) < 0) return true; // 이상한 버튼 값(NaN 등)은 무시
+    if (d.ptix && !(save.shop.tix >= n)) { petSay("🎟 뽑기권이 " + (n - save.shop.tix) + "장 모자라요 · 🎁 패키지 탭에서 받아요"); sfx("over"); petDone(); return true; }
+    r = petPull(st, save.mats, Math.random, n, d.pfree ? true : d.ptix ? "tix" : false);
+    if (!r.ok) { petSay(r.err + (/모자라/.test(r.err) ? " · 📅 오늘 보상에서 받아요" : "")); sfx("over"); petDone(); return true; }
+    if (d.pfree) dailyFreeUse(save.daily, dayNum());
+    if (d.ptix) save.shop.tix -= n;
+    dailyQuestAdd(save.daily, dayNum(), 2);
+    save.mats = r.mats; petLast = r.res; var cnt = {}, best = 0;
+    r.res.forEach(function (x) { cnt[x.tier] = (cnt[x.tier] || 0) + 1; if (PET_TIX[x.tier] > best) best = PET_TIX[x.tier]; });
+    sfx(best >= 2 ? "buy" : "gem", 1);
+    petSay("🎰 " + r.res.length + "회 결과: " + PET_TIERS.slice().reverse().filter(function (t) { return cnt[t[0]]; }).map(function (t) { return t[1] + " " + cnt[t[0]]; }).join(" · ") + " · 내 펫에서 공간에 놓아요");
+    petDone(); return true;
+  }
   function renderPets() {
     var st = save.pets, h = "", sps = petSpaces();
     $("petGem").textContent = save.mats;
@@ -2161,14 +2316,7 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
       if (petShop === "pick") {
         h += "<div class='label'>분양샵 · 초기 펫 직접 골라요 (1마리 💎 " + PET_PRICE + ")</div>";
         petIds("s").forEach(function (id) { h += "<div class='irow'><div class='pface'>" + petFace(id) + "<div><b>" + PET[id].name + "</b><small>" + (PET[id].kind === "dog" ? "강아지" : "고양이") + " · " + PET_TIER.s + "</small></div></div><div class='bt'><button data-pbuy='" + id + "'>💎 " + PET_PRICE + "</button></div></div>"; });
-      } else {
-        var q = st.pull, fr = dailyFreeOk(save.daily, dayNum());
-        h += "<div class='pfree'><button class='primary' data-pfree='1'" + (fr ? "" : " disabled") + ">" + (fr ? "🎁 오늘 무료 1회" : "🎁 무료 1회는 내일 또 와요") + "</button></div>";
-        h += "<div class='label'>🎰 뽑기 · 1회 💎 " + GACHA.price + " · 모든 등급(" + PET_TIERS.map(function (t) { return t[1]; }).join("·") + ")이 나와요</div>" +
-          "<small style='display:block' id='petPity'>확정까지: " + PET_TIERS.filter(function (t) { return GACHA.ceil.hasOwnProperty(t[0]); }).map(function (t) { return t[1] + (PET_TIX[t[0]] < PET_TIERS.length - 1 ? " 이상 " : " ") + (GACHA.ceil[t[0]] - q[t[0]]) + "회"; }).join(" · ") + "</small>" +
-          "<div class='ppull'>" + GACHA.counts.map(function (n) { return "<button class='primary' data-ppull='" + n + "'>" + n + "회 · 💎 " + GACHA.price * n + "</button>"; }).join("") + "</div>" + petOddsBtn();
-        if (petLast.length) h += "<div class='label'>방금 뽑은 펫</div><div class='pgrid' id='petLast'>" + petLast.map(function (x) { var c = petTierC(x.tier); return "<div class='pres" + (x.force ? " force" : "") + "' data-rtier='" + x.tier + "' style='border-color:" + c[3] + "'>" + petFace(x.id) + PET[x.id].name + petTag(x.tier) + "</div>"; }).join("") + "</div>";
-      }
+      } else h += petGachaHtml();
     } else {
       var f = st.fails;
       h = "<div class='prate'><b>합성 확률</b> (같은 등급 3마리, 다이아 안 들어요)";
@@ -2183,7 +2331,7 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
     }
     $("petBody").innerHTML = h;
   }
-  function petDone() { persist(); renderPets(); renderHome(); }
+  function petDone() { persist(); if (shopOn()) renderItems(); else renderPets(); renderHome(); }
   $("petBtn").addEventListener("click", function () { petOpen(); });
   $("petBack").addEventListener("click", openHome);
   $("petTabs").addEventListener("click", function (e) { var b = e.target.closest("[data-ptab]"); if (b) { petTab = b.dataset.ptab; petPick = []; petWarn = null; petSay(""); renderPets(); } });
@@ -2191,19 +2339,7 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
     var b = e.target.closest("button"); if (!b || b.disabled) return; var d = b.dataset, st = save.pets, r;
     if (d.psel) { petSel = d.psel; renderPets(); return; }
     if (d.pshop) { petShop = d.pshop; petSay(""); renderPets(); return; }
-    if (d.podds) { petOdds = !petOdds; renderPets(); return; }
-    if (d.ppull || d.pfree) {
-      if (d.pfree && !dailyFreeOk(save.daily, dayNum())) { petSay("오늘 무료 뽑기는 이미 썼어요"); petDone(); return; }
-      r = petPull(st, save.mats, Math.random, d.pfree ? 1 : +d.ppull, !!d.pfree);
-      if (!r.ok) { petSay(r.err); sfx("over"); petDone(); return; }
-      if (d.pfree) dailyFreeUse(save.daily, dayNum());
-      dailyQuestAdd(save.daily, dayNum(), 2);
-      save.mats = r.mats; petLast = r.res; var cnt = {}, best = 0;
-      r.res.forEach(function (x) { cnt[x.tier] = (cnt[x.tier] || 0) + 1; if (PET_TIX[x.tier] > best) best = PET_TIX[x.tier]; });
-      sfx(best >= 2 ? "buy" : "gem", 1);
-      petSay("🎰 " + r.res.length + "회 결과: " + PET_TIERS.slice().reverse().filter(function (t) { return cnt[t[0]]; }).map(function (t) { return t[1] + " " + cnt[t[0]]; }).join(" · ") + " · 내 펫에서 공간에 놓아요");
-      petDone(); return;
-    }
+    if (petGachaClick(d)) return;
     if (d.pjoin && petSel) { r = petJoin(st, save.mats, petSel, Date.now()); if (r.ok) { save.mats = r.mats; sfx("buy"); petTab = "my"; petSay(PET[petSel].name + " 환영해요! 💎 +" + PET_JOIN + " · 집에 놓았어요"); } else petSay(r.err); petSel = null; petDone(); return; }
     if (d.pbuy) { r = petBuy(st, save.mats, d.pbuy); if (r.ok) { save.mats = r.mats; sfx("buy"); petSay(PET[d.pbuy].name + " 분양 완료! 내 펫에서 공간에 놓아요"); } else { petSay(r.err); sfx("over"); } petDone(); return; }
     if (d.pidle) { r = idleCollect(st, Date.now()); if (r.ok) giveGems(r.gems, "방치 수입"); petDone(); return; }
@@ -2263,9 +2399,13 @@ var SPACEDEF={"home":["집","🏠",0],"salon":["미용실","💇",600],"office":
   function openHome() { $("petMenu").hidden = true; $("loginMenu").hidden = true; bgmSet("home"); $("rankMenu").hidden = true; $("homeMain").hidden = false; $("skinMenu").hidden = true; $("achMenu").hidden = true; $("itemMenu").hidden = true; $("setMenu").hidden = true; $("roomMenu").hidden = true; renderHome(); if (!consumeVisit()) { petAutoJoin(); dailyAuto(); } }
   $("skinBtn").addEventListener("click", function () { $("homeMain").hidden = true; $("skinMenu").hidden = false; renderShop(); });
   $("skinBack").addEventListener("click", openHome);
-  $("itemBtn").addEventListener("click", function () { $("homeMain").hidden = true; $("itemMenu").hidden = false; $("itemMsg").textContent = ""; renderItems(); });
+  $("itemBtn").addEventListener("click", function () { shopView = "pack"; petLast = []; $("petBody").innerHTML = ""; $("homeMain").hidden = true; $("itemMenu").hidden = false; $("itemMsg").textContent = ""; renderItems(); });
   $("itemBack").addEventListener("click", openHome);
-  $("itemList").addEventListener("click", function (e) { var t = e.target; if (t.dataset.buy) buyItem(t.dataset.buy); else if (t.dataset.cash) buyCash(t.dataset.cash); });
+  $("itemTabs").addEventListener("click", function (e) { var b = e.target.closest("[data-stab]"); if (!b) return; shopView = b.dataset.stab; petLast = []; $("itemMsg").textContent = ""; renderItems(); });
+  $("itemList").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b || b.disabled) return; var d = b.dataset;
+    if (d.pack) buyPack(d.pack); else if (d.buy) { buyItem(d.buy); renderItems(); } else if (d.cash) buyCash(d.cash); else if (d.pgo) petOpen(); else petGachaClick(d);
+  });
   $("achBtn").addEventListener("click", function () {
     $("homeMain").hidden = true; $("achMenu").hidden = false;
     $("achList").innerHTML = "<div class='label'>업적</div>" + ACHS.map(function (a) { var d = save.ach.indexOf(a.id) >= 0; return "<div class='" + (d ? "done" : "todo") + "'>" + (d ? "✔ " : "○ ") + a.text + "</div>"; }).join("");
